@@ -1,8 +1,9 @@
 package main
 
-import(
-	fmt
-	./animals
+import (
+	"fmt"
+
+	"github.com/sena-anny/go-grpc/animals"
 )
 
 func main() {
