@@ -10,3 +10,7 @@ func main() {
 	fmt.Println(animals.ElephantFeed())
 	fmt.Println(animals.DogFeed())
 }
+
+func test() string {
+	return animals.ElephantFeed()
+}
