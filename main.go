@@ -1,47 +1,55 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/sena-anny/go-grpc/animals"
 
-	_ "github.com/sena-anny/go-grpc/animals"
+	"github.com/go-redis/redis/v8"
 )
 
 func main() {
-	var p int
-	a := &p
-	p = 5
-	fmt.Printf("typs = %T adress = %p value = %d \n",a, a, *a)
-	*a = 10
-
-	s := "PS"
-	printString(s)
-
-	n := Sum(
-			[]int{1,2,3},
-			func(i int) int {
-				return i *2
-			},
-		)
-	fmt.Println(n)
-
-	fmt.Println(animals.ElephantFeed())
-	fmt.Println(animals.DogFeed())
-}
-
-func printString(s string) {
-	fmt.Println(s)
-}
-
-type Callback func(i int) int
-func Sum(ints []int, callback Callback) int {
-	var sum int
-	for _, i := range ints {
-		sum += i
+	fmt.Println("redis server ")
+	ctx := context.Background()
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+	err := rdb.Set(ctx, "kj", "redis master", 0).Err()
+	if err != nil {
+		panic(err)
 	}
-	return callback(sum)
+
+	val, err := rdb.Get(ctx, "kj").Result()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("kj: val= ", val)
+
+	val2, err := rdb.Get(ctx, "mj").Result()
+	if err != nil {
+		fmt.Println("No value")
+	} else {
+		fmt.Println(val2)
+	}
+
+	ListSet(rdb, ctx, "list")
+	ListGet(rdb, ctx, "list")
+
 }
 
-func test() string {
-	return animals.ElephantFeed()
+func ListSet(clint *redis.Client, ctx context.Context, key string) {
+	listVal := []string{"a", "b"}
+	err := clint.RPush(ctx, key, listVal).Err()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func ListGet(client *redis.Client, ctx context.Context, key string) {
+	val, err := client.LRange(ctx, key, 0, 1).Result()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(val)
 }
